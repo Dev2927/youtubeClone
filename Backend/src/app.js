@@ -18,4 +18,12 @@ app.use(express.urlencoded({ extended: true, limit: limit }));
 app.use(express.static("public"));
 app.use(cookieParser())
 
+
+//Routes
+import userRouter from './routes/user.routes.js'
+
+
+// Routes declaration
+app.use("/api/v1/users", userRouter)
+
 export { app };

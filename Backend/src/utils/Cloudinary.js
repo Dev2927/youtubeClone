@@ -10,7 +10,6 @@ cloudinary.config({
 const uploadOnCloudinaary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
-    // Upload the file on cloudinary
     const responce = await cloudinary.uploader.upload(localFilePath, {
       folder: "Vtube",
       resource_type: "auto",

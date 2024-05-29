@@ -7,17 +7,24 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinaary = async (localFilePath) => {
+const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
     const responce = await cloudinary.uploader.upload(localFilePath, {
-      folder: "Vtube",
+      folder: "youtubeClone",
       resource_type: "auto",
     });
-    fs.unlinkSync(localFilePath);
+    fs.unlink("public" + localFilePath, function (err) {
+      if (err) {
+        console.log("Error in cloudinary code: ", err.message);  
+      }
+    });
+
+    // console.log("Response of cloudinary: ", responce);
     return responce;
   } catch (error) {
     fs.unlinkSync(localFilePath);
+    // console.log("Error in cloudinary : ", error);
     return null;
   }
 };
@@ -34,4 +41,4 @@ const deleteOnCloudinary = async (public_id, resource_type) => {
   }
 };
 
-export { uploadOnCloudinaary, deleteOnCloudinary };
+export { uploadOnCloudinary, deleteOnCloudinary };

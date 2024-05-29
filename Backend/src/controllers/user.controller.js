@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinaary } from "../utils/Cloudinary.js";
+import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -26,7 +26,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 // -----------------------Register User in Database
-const registeruser = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
   const { fullName, username, email, password } = req.body;
 
   if (
@@ -54,16 +54,22 @@ const registeruser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
+  console.log('AvatarLocalPath: ', avatarLocalPath)
+  console.log('CoverImageLocalPath: ', coverImageLocalPath)
+
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
 
-  const avatar = await uploadOnCloudinaary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinaary(coverImageLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!avatar) {
     throw new ApiError(400, "Avatar file is required");
   }
+
+  console.log('Avatar: ', avatar)
+  console.log('CoverImage: ', coverImage)
 
   const user = await User.create({
     fullName,
@@ -270,7 +276,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is missing");
   }
 
-  const avatar = await uploadOnCloudinaary(avatarLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar");
@@ -300,7 +306,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Cover Image is missing");
   }
 
-  const coverImage = await uploadOnCloudinaary(coverImageLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!coverImage?.url) {
     throw new ApiError(400, "Something went wrong while uploading");
@@ -447,7 +453,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 });
 
 export {
-  registeruser,
+  registerUser,
   loginUser,
   logoutUser,
   refreshAccessToken,

@@ -40,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with email or username already exists");
+    throw new ApiError(400, "User with email or username already exists");
   }
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -54,8 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
-  console.log('AvatarLocalPath: ', avatarLocalPath)
-  console.log('CoverImageLocalPath: ', coverImageLocalPath)
+  console.log("AvatarLocalPath: ", avatarLocalPath);
+  console.log("CoverImageLocalPath: ", coverImageLocalPath);
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
@@ -68,8 +68,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is required");
   }
 
-  console.log('Avatar: ', avatar)
-  console.log('CoverImage: ', coverImage)
+  console.log("Avatar: ", avatar);
+  console.log("CoverImage: ", coverImage);
 
   const user = await User.create({
     fullName,
@@ -95,20 +95,17 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // -----------------------Login user with the help of email & password
 const loginUser = asyncHandler(async (req, res) => {
-  
-  const { email, username, password } = req.body;
+  const { email, password } = req.body;
 
-  // console.log("EMAIL: ", email)
-  // console.log("username: ", username)
-  // console.log("password: ", password)
+  console.log('EMAIl: ', email)
 
-  if (!username && !email) {
-    throw new ApiError(400, "Username or password is required");
+  if (!email) {
+    throw new ApiError(400, "email is required");
   }
 
-  const user = await User.findOne({
-    $or: [{ email }, { username }],
-  });
+  const user = await User.findOne({ email });
+
+  console.log("NF: ", user);
 
   if (!user) {
     throw new ApiError(404, "User doesn't exist");
@@ -120,13 +117,13 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User doesn't exist");
   }
 
-  const { refreshToken, accessToken } = generateAccessAndRefreshTokens(
+  const { refreshToken, accessToken } = await generateAccessAndRefreshTokens(
     user._id
   );
 
-  const loggedInUser = await User
-    .findById(user._id)
-    .select("-password -refreshToken");
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
 
   const options = {
     secure: true,
@@ -176,13 +173,13 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out"));
 });
 
-// --------------------------Refresh & Access Token---------------
+// -------------------------- Refresh & Access Token ---------------------------------
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, " Unauthorized Request");
+    throw new ApiError(401, "Unauthorized Request");
   }
 
   try {
@@ -191,24 +188,23 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET
     );
 
+    console.log("DECODe: ", decodedToken._id);
+
     const user = User.findById(decodedToken?._id);
 
     if (!user) {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    if (incomingRefreshToken != user.refreshToken) {
-      throw new ApiError(401, "Refresh token is expired or used");
-    }
+    console.log("AVA?: ", user._id);
 
     const options = {
       httpOnly: true,
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } = generateAccessAndRefreshTokens(
-      user._id
-    );
+    const { accessToken, newRefreshToken } =
+      await generateAccessAndRefreshTokens(decodedToken._id);
 
     return res
       .status(200)
@@ -468,5 +464,5 @@ export {
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
-  getWatchHistory
+  getWatchHistory,
 };

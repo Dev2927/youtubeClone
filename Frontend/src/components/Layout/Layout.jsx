@@ -1,10 +1,11 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import LayoutData from './LayoutData';
+import Login from '../Auth/Login';
 
 function Layout() {
 
-  
-    
+  const navigate = useNavigate()
+  const loggedIn = localStorage.getItem('@IsLoggedIn')  
 
   return (
     <>
@@ -19,7 +20,7 @@ function Layout() {
           </div>
         </div>
 
-        <LayoutData />
+        {loggedIn == 'true' ? <LayoutData /> : <Login />}
         <Outlet />
       </div>
     </>

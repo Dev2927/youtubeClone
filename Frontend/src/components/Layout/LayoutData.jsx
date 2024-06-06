@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import logoImg from "../../assets/dev.png";
-import profileImg from "../../assets/img2.jpg";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MdHomeFilled } from "react-icons/md";
@@ -8,9 +7,10 @@ import { FaUser } from "react-icons/fa";
 import { RiChatHistoryFill } from "react-icons/ri";
 import { MdVideoCameraFront } from "react-icons/md";
 import { AiFillLike } from "react-icons/ai";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 function LayoutData() {
-
   const [placeholder, setPlaceholder] = useState("Type to search...");
   const [searchTerm, setSearchTerm] = useState("");
   const [sideBarProperty, setSideBarProperty] = useState(true);
@@ -18,8 +18,10 @@ function LayoutData() {
     window.innerHeight,
     window.innerWidth,
   ]);
+  const [avatarURI, setAvatarURI] = useState();
 
   const navigate = useNavigate();
+  let jwt = localStorage.getItem("@JWT");
 
   useEffect(() => {
     const windowSizeHandler = () => {
@@ -49,15 +51,9 @@ function LayoutData() {
       document.getElementById("sidebar").style.display = "block";
       document.getElementById("sidebar").style.transition =
         "transform 0.2s ease-in-out";
-      document.getElementById("main").style.marginLeft = "100px";
       document.getElementById("footer").style.marginLeft = "100px";
     }
   }, [w]);
-
-  const logout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
 
   const handlesidebar = () => {
     setSideBarProperty(!sideBarProperty);
@@ -76,16 +72,34 @@ function LayoutData() {
       document.getElementById("sidebar").style.transition =
         "transform 0.2s ease-in-out";
       document.getElementById("main").style.marginLeft = "100px";
-
-      //document.getElementById('sidebar').style.
     }
   };
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await axios.get(`/api/v1/users/current-user`, {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+        if (response.data.success === true) {
+          setAvatarURI(response.data.data.avatar);
+        } else {
+          toast.error("Unable to load your avatar");
+        }
+      } catch (error) {
+        console.log("get user api is not working: ", error);
+      }
+    })();
+  }, []);
+
   return (
     <div>
+      <Toaster position="top-center" reverseOrder={false} />
       <header
         id="header"
-        className="header fixed-top d-flex align-items-center"
+        className="header fixed-top d-flex align-items-center justify-content-between"
         style={{ backgroundColor: "#ffffff" }}
       >
         <div className="d-flex align-items-center justify-content-between">
@@ -101,9 +115,7 @@ function LayoutData() {
         </div>
 
         <div className="search-bar">
-          <form
-            className="search-form d-flex align-items-center"
-          >
+          <form className="search-form d-flex align-items-center">
             <input
               type="text"
               name="query"
@@ -116,80 +128,25 @@ function LayoutData() {
           </form>
         </div>
 
-        <nav className="header-nav ms-auto">
-          <ul className="d-flex align-items-center">
-            <li className="nav-item d-block d-lg-none">
-              <a className="nav-link nav-icon search-bar-toggle " href="#">
-                <i className="bi bi-search"></i>
-              </a>
-            </li>
-
-            <li className="me-3">
-              <span
-                className=" nav-link nav-profile d-flex align-items-center pe-0 show"
-                href="#"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                style={{ cursor: "pointer" }}
-              >
-                <img
-                  src={profileImg}
-                  alt="Profile"
-                  className="rounded-circle"
-                  style={{ width: "35px" }}
-                />
-                <span
-                  className="d-none d-md-block dropdown-toggle ps-2"
-                  style={{ color: "#19A7CE" }}
-                >
-                  Admin
-                </span>
-              </span>
-
-              <ul
-                className=" dropdown-menu dropdown-menu-end dropdown-menu-arrow profile"
-                style={{
-                  position: "absolute",
-                  inset: " 0px 0px auto auto",
-                  margin: "0px",
-                  transform: "translate3d(-16px, 38px, 0px)",
-                }}
-                data-popper-placement="bottom-end"
-              >
-                <li className="dropdown-header">
-                  <h6>Admin</h6>
-                  <span></span>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-
-                <li>
-                  <a
-                    className="dropdown-item d-flex align-items-center"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="bi bi-question-circle"></i>
-                    <span>Need Help?</span>
-                  </a>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-
-                <li onClick={logout}>
-                  <a
-                    className="dropdown-item d-flex align-items-center"
-                    style={{ cursor: "pointer" }}
-                  >
-                    <i className="bi bi-box-arrow-right"></i>
-                    <span>Sign Out</span>
-                  </a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </nav>
+        <div>
+          <button
+            style={{
+              width: 60,
+              height: 40,
+              borderRadius: 30,
+              border: "none",
+              background: "none",
+            }}
+            onClick={() => navigate('/profilepage')}
+          >
+            <img
+              src={avatarURI}
+              width="100%"
+              height="100%"
+              style={{ borderRadius: 30 }}
+            />
+          </button>
+        </div>
       </header>
 
       {/*=========================SideBar Start========================*/}

@@ -1,11 +1,33 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import coverImage from "../../assets/coverImage.jpg";
+import { useNavigate } from "react-router-dom";
 
 function ProfilePage() {
   const [data, setData] = useState();
+  const [sendBody, setSendBody] = useState({
+    fullName: "",
+    username: "",
+    email: "",
+  });
+  const [error, setError] = useState({
+    email: "",
+    fullName: "",
+    username: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [sendBodyForPassword, setSendBodyForPassword] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
+  const [errorPass, setErrorPass] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
 
   let jwt = localStorage.getItem("@JWT");
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -15,8 +37,14 @@ function ProfilePage() {
             Authorization: `Bearer ${jwt}`,
           },
         });
+        console.log("Response of profile: ", response.data);
         if (response.data.success === true) {
           setData(response.data.data);
+          setSendBody({
+            fullName: response.data.data.fullName,
+            username: response.data.data.username,
+            email: response.data.data.email,
+          });
         } else {
           toast.error("Unable to load your profile details");
         }
@@ -27,23 +55,187 @@ function ProfilePage() {
     })();
   }, []);
 
-  console.log("Data: ", data);
+  const handleInputDetails = (e) => {
+    const { name, value } = e.target;
+    setSendBody({
+      ...sendBody,
+      [name]: value,
+    });
+    setError({
+      ...error,
+      [name]: "",
+    });
+  };
+
+  const validateInput = () => {
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    const obj = {};
+
+    for (let key in error) {
+      if (sendBody[key] === "" || sendBody[key] === null) {
+        obj[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+      }
+    }
+
+    if (sendBody.email !== "" && !emailRegex.test(sendBody.email)) {
+      obj.email = `Email is not valid`;
+    }
+
+    setError(obj);
+
+    return Object.keys(obj).length === 0;
+  };
+
+  const handleEditDetails = async () => {
+    if (validateInput() === false) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        `/api/v1/users/update-account`,
+        sendBody,
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+      console.log("Response of Edit user: ", response.data);
+      if (response.data.success === true) {
+        toast.success(response?.data?.message);
+        setLoading(false);
+      } else {
+        toast.error(response?.data?.message);
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
+      toast.error(error?.response?.data?.message);
+      console.log(error);
+    }
+  };
+
+  const handleInputPasswordChange = (e) => {
+    const { name, value } = e.target;
+
+    setSendBodyForPassword({
+      ...sendBodyForPassword,
+      [name]: value,
+    });
+    setErrorPass({
+      ...errorPass,
+      [name]: "",
+    });
+  };
+
+  const validateInputForPass = () => {
+    const passwrdRegex =
+      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/;
+    const obj = {};
+
+    for (let key in errorPass) {
+      if (
+        sendBodyForPassword[key] === "" ||
+        sendBodyForPassword[key] === null
+      ) {
+        obj[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required`;
+      }
+    }
+
+    if (
+      sendBodyForPassword.newPassword !== "" &&
+      !passwrdRegex.test(sendBodyForPassword.newPassword)
+    ) {
+      obj.newPassword = `Password must have eight characters, one small letter, one capital letter, one number, and one special character.`;
+    } else if (
+      sendBodyForPassword.newPassword !== "" &&
+      sendBodyForPassword.newPassword.length < 8
+    ) {
+      obj.newPassword = `Password must be at least 8 characters long.`;
+    }
+
+    setErrorPass(obj);
+
+    return Object.keys(obj).length === 0;
+  };
+
+  const handlePassChange = async () => {
+    if (validateInputForPass() === false) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `/api/v1/users/change-password`,
+        sendBodyForPassword,
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+      console.log("Response of Pass Change: ", response.data);
+      if (response.data.success === true) {
+        toast.success(response?.data?.message);
+        setLoading(false);
+      } else {
+        toast.error(response?.data?.message);
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
+      toast.error(error?.response?.data?.message);
+      console.log(error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post(`/api/v1/users/logout`, null, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+      console.log("Res of logout: ", res.data);
+      if (res.data.success === true) {
+        toast.success(res?.data?.message);
+        setTimeout(() => {
+          localStorage.clear();
+          window.location.reload();
+        }, 1000);
+      } else {
+        toast.error(res?.data?.message);
+      }
+    } catch (error) {
+      console.log("LOGOUT API is not working: ", error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
 
   return (
     <main id="main" className="main">
       <Toaster position="top-center" reverseOrder={false} />
 
-      <div className="pagetitle">
-        <h1>Profile</h1>
-        <nav>
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <a href="index.html">Home</a>
-            </li>
-            <li className="breadcrumb-item">Users</li>
-            <li className="breadcrumb-item active">Profile</li>
-          </ol>
-        </nav>
+      <div className="pagetitle d-flex justify-content-between">
+        <div>
+          <h1>Profile</h1>
+          <nav>
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <a href="index.html">Home</a>
+              </li>
+              <li className="breadcrumb-item">Users</li>
+              <li className="breadcrumb-item active">Profile</li>
+            </ol>
+          </nav>
+        </div>
+
+        <button className="logoutButton" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
 
       <section className="section profile">
@@ -58,20 +250,6 @@ function ProfilePage() {
                 />
                 <h2>{data?.username}</h2>
                 <h3>{data?.fullName}</h3>
-                {/* <div className="social-links mt-2">
-                  <a href="#" className="twitter">
-                    <i className="bi bi-twitter"></i>
-                  </a>
-                  <a href="#" className="facebook">
-                    <i className="bi bi-facebook"></i>
-                  </a>
-                  <a href="#" className="instagram">
-                    <i className="bi bi-instagram"></i>
-                  </a>
-                  <a href="#" className="linkedin">
-                    <i className="bi bi-linkedin"></i>
-                  </a>
-                </div> */}
               </div>
             </div>
           </div>
@@ -115,91 +293,56 @@ function ProfilePage() {
                     className="tab-pane fade show active profile-overview"
                     id="profile-overview"
                   >
-                    <h5 className="card-title">About</h5>
-                    <p className="small fst-italic">
-                      Sunt est soluta temporibus accusantium neque nam maiores
-                      cumque temporibus. Tempora libero non est unde veniam est
-                      qui dolor. Ut sunt iure rerum quae quisquam autem eveniet
-                      perspiciatis odit. Fuga sequi sed ea saepe at unde.
-                    </p>
+                    <div className="p-0 m-0" style={{ position: "relative" }}>
+                      <img
+                        src={coverImage}
+                        alt="no img"
+                        width="100%"
+                        height="100%"
+                      />
+                      <div
+                        style={{
+                          height: 130,
+                          width: 130,
+                          position: "absolute",
+                          bottom: 1,
+                          top: 150,
+                        }}
+                      >
+                        <img
+                          src={data?.avatar}
+                          alt="no img"
+                          width="100%"
+                          height="100%"
+                          style={{ borderRadius: 200 }}
+                        />
+                      </div>
+                    </div>
 
-                    <h5 className="card-title">Profile Details</h5>
+                    <h5 className="card-title mt-5">Profile Details</h5>
 
                     <div className="row">
                       <div className="col-lg-3 col-md-4 label ">Full Name</div>
-                      <div className="col-lg-9 col-md-8">Kevin Anderson</div>
+                      <div className="col-lg-9 col-md-8">{data?.fullName}</div>
                     </div>
 
                     <div className="row">
-                      <div className="col-lg-3 col-md-4 label">Company</div>
-                      <div className="col-lg-9 col-md-8">
-                        Lueilwitz, Wisoky and Leuschke
-                      </div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-lg-3 col-md-4 label">Job</div>
-                      <div className="col-lg-9 col-md-8">Web Designer</div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-lg-3 col-md-4 label">Country</div>
-                      <div className="col-lg-9 col-md-8">USA</div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-lg-3 col-md-4 label">Address</div>
-                      <div className="col-lg-9 col-md-8">
-                        A108 Adam Street, New York, NY 535022
-                      </div>
-                    </div>
-
-                    <div className="row">
-                      <div className="col-lg-3 col-md-4 label">Phone</div>
-                      <div className="col-lg-9 col-md-8">(436) 486-3538 x29071</div>
+                      <div className="col-lg-3 col-md-4 label">Username</div>
+                      <div className="col-lg-9 col-md-8">{data?.username}</div>
                     </div>
 
                     <div className="row">
                       <div className="col-lg-3 col-md-4 label">Email</div>
-                      <div className="col-lg-9 col-md-8">
-                        k.anderson@example.com
-                      </div>
+                      <div className="col-lg-9 col-md-8">{data?.email}</div>
                     </div>
                   </div>
 
+                  {/* ------------------------------------- Modal For EDIT Details ------------------------------------------- */}
                   <div
                     className="tab-pane fade profile-edit pt-3"
                     id="profile-edit"
                   >
-                    <form>
-                      <div className="row mb-3">
-                        <label
-                          for="profileImage"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Profile Image
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <img src="assets/img/profile-img.jpg" alt="Profile" />
-                          <div className="pt-2">
-                            <a
-                              href="#"
-                              className="btn btn-primary btn-sm"
-                              title="Upload new profile image"
-                            >
-                              <i className="bi bi-upload"></i>
-                            </a>
-                            <a
-                              href="#"
-                              className="btn btn-danger btn-sm"
-                              title="Remove my profile image"
-                            >
-                              <i className="bi bi-trash"></i>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-
+                    <div>
                       <div className="row mb-3">
                         <label
                           for="fullName"
@@ -211,123 +354,40 @@ function ProfilePage() {
                           <input
                             name="fullName"
                             type="text"
-                            className="form-control"
+                            className={`form-control ${
+                              error.fullName ? "is-invalid" : ""
+                            }`}
                             id="fullName"
-                            value="Kevin Anderson"
+                            value={sendBody.fullName}
+                            onChange={handleInputDetails}
                           />
+                          <div className="invalid-feedback">
+                            {error.fullName}
+                          </div>
                         </div>
                       </div>
 
                       <div className="row mb-3">
                         <label
-                          for="about"
+                          for="Username"
                           className="col-md-4 col-lg-3 col-form-label"
                         >
-                          About
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <textarea
-                            name="about"
-                            className="form-control"
-                            id="about"
-                            style={{height: '100px'}}
-                          >
-                            Sunt est soluta temporibus accusantium neque nam
-                            maiores cumque temporibus. Tempora libero non est
-                            unde veniam est qui dolor. Ut sunt iure rerum quae
-                            quisquam autem eveniet perspiciatis odit. Fuga sequi
-                            sed ea saepe at unde.
-                          </textarea>
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="company"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Company
+                          Username
                         </label>
                         <div className="col-md-8 col-lg-9">
                           <input
-                            name="company"
+                            name="username"
                             type="text"
-                            className="form-control"
-                            id="company"
-                            value="Lueilwitz, Wisoky and Leuschke"
+                            className={`form-control ${
+                              error.username ? "is-invalid" : ""
+                            }`}
+                            id="username"
+                            value={sendBody.username}
+                            onChange={handleInputDetails}
                           />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Job"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Job
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="job"
-                            type="text"
-                            className="form-control"
-                            id="Job"
-                            value="Web Designer"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Country"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Country
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="country"
-                            type="text"
-                            className="form-control"
-                            id="Country"
-                            value="USA"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Address"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Address
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="address"
-                            type="text"
-                            className="form-control"
-                            id="Address"
-                            value="A108 Adam Street, New York, NY 535022"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Phone"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Phone
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="phone"
-                            type="text"
-                            className="form-control"
-                            id="Phone"
-                            value="(436) 486-3538 x29071"
-                          />
+                          <div className="invalid-feedback">
+                            {error.username}
+                          </div>
                         </div>
                       </div>
 
@@ -341,96 +401,46 @@ function ProfilePage() {
                         <div className="col-md-8 col-lg-9">
                           <input
                             name="email"
-                            type="email"
-                            className="form-control"
-                            id="Email"
-                            value="k.anderson@example.com"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Twitter"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Twitter Profile
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="twitter"
                             type="text"
-                            className="form-control"
-                            id="Twitter"
-                            value="https://twitter.com/#"
+                            className={`form-control ${
+                              error.email ? "is-invalid" : ""
+                            }`}
+                            id="email"
+                            value={sendBody.email}
+                            onChange={handleInputDetails}
                           />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Facebook"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Facebook Profile
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="facebook"
-                            type="text"
-                            className="form-control"
-                            id="Facebook"
-                            value="https://facebook.com/#"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Instagram"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Instagram Profile
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="instagram"
-                            type="text"
-                            className="form-control"
-                            id="Instagram"
-                            value="https://instagram.com/#"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="Linkedin"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Linkedin Profile
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="linkedin"
-                            type="text"
-                            className="form-control"
-                            id="Linkedin"
-                            value="https://linkedin.com/#"
-                          />
+                          <div className="invalid-feedback">{error.email}</div>
                         </div>
                       </div>
 
                       <div className="text-center">
-                        <button type="submit" className="btn btn-primary">
-                          Save Changes
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleEditDetails}
+                        >
+                          {loading ? (
+                            <div
+                              className="spinner-border text-light"
+                              role="status"
+                            >
+                              <span className="visually-hidden">
+                                Loading...
+                              </span>
+                            </div>
+                          ) : (
+                            "Save Changes"
+                          )}
                         </button>
                       </div>
-                    </form>
+                    </div>
                   </div>
 
-                  <div className="tab-pane fade pt-3" id="profile-change-password">
-                    <form>
+                  {/* ------------------------------------- Modal For Save Password ------------------------------------------- */}
+                  <div
+                    className="tab-pane fade pt-3"
+                    id="profile-change-password"
+                  >
+                    <div>
                       <div className="row mb-3">
                         <label
                           for="currentPassword"
@@ -440,11 +450,18 @@ function ProfilePage() {
                         </label>
                         <div className="col-md-8 col-lg-9">
                           <input
-                            name="password"
+                            name="oldPassword"
                             type="password"
-                            className="form-control"
+                            className={`form-control ${
+                              errorPass.oldPassword ? "is-invalid" : ""
+                            }`}
                             id="currentPassword"
+                            value={sendBodyForPassword.oldPassword}
+                            onChange={handleInputPasswordChange}
                           />
+                          <div className="invalid-feedback">
+                            {errorPass.oldPassword}
+                          </div>
                         </div>
                       </div>
 
@@ -457,37 +474,41 @@ function ProfilePage() {
                         </label>
                         <div className="col-md-8 col-lg-9">
                           <input
-                            name="newpassword"
+                            name="newPassword"
                             type="password"
-                            className="form-control"
+                            className={`form-control ${
+                              errorPass.newPassword ? "is-invalid" : ""
+                            }`}
                             id="newPassword"
+                            value={sendBodyForPassword.newPassword}
+                            onChange={handleInputPasswordChange}
                           />
-                        </div>
-                      </div>
-
-                      <div className="row mb-3">
-                        <label
-                          for="renewPassword"
-                          className="col-md-4 col-lg-3 col-form-label"
-                        >
-                          Re-enter New Password
-                        </label>
-                        <div className="col-md-8 col-lg-9">
-                          <input
-                            name="renewpassword"
-                            type="password"
-                            className="form-control"
-                            id="renewPassword"
-                          />
+                          <div className="invalid-feedback">
+                            {errorPass.newPassword}
+                          </div>
                         </div>
                       </div>
 
                       <div className="text-center">
-                        <button type="submit" className="btn btn-primary">
-                          Change Password
+                        <button
+                          className="btn btn-primary"
+                          onClick={handlePassChange}
+                        >
+                          {loading ? (
+                            <div
+                              className="spinner-border text-light"
+                              role="status"
+                            >
+                              <span className="visually-hidden">
+                                Loading...
+                              </span>
+                            </div>
+                          ) : (
+                            "Change Password"
+                          )}
                         </button>
                       </div>
-                    </form>
+                    </div>
                   </div>
                 </div>
               </div>

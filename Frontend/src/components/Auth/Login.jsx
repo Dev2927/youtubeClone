@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -13,8 +13,6 @@ function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
 
   const handleLogin = async () => {
     const requiredFields = ["email", "password"];
@@ -33,7 +31,7 @@ function Login() {
     setLoading(true);
     try {
       const response = await axios.post(`/api/v1/users/login`, sendBody);
-      console.log("response: ", response.data.data?.user?.email);
+      console.log("response: ", response.data);
       if (response.data.success === true) {
         setLoading(false);
         localStorage.setItem("@ID", response.data.data?.user?._id);
@@ -62,9 +60,10 @@ function Login() {
   const generateAccessRefreshToken = async (refreshToken) => {
     try {
       const res = await axios.post(`/api/v1/users/refresh-token`, refreshToken);
+      console.log('Response of generate access token: ', res.data)
       if (res.data.success === true) {
         localStorage.setItem("@JWT", res.data.data.accessToken);
-        navigate("/");
+        window.location.reload();
       } else {
         toast.error("Unable to login");
         localStorage.clear();
@@ -86,6 +85,12 @@ function Login() {
       ...error,
       [name]: false,
     });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
   };
 
   return (
@@ -150,6 +155,7 @@ function Login() {
                           required
                           onChange={handleInput}
                           value={sendBody.password}
+                          onKeyDown={handleKeyDown}
                         />
                         <div className="invalid-feedback">
                           Please enter your password!

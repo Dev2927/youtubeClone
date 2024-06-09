@@ -43,7 +43,7 @@ function LayoutData() {
       document.getElementById("sidebar").style.display = "none";
       document.getElementById("sidebar").style.transition =
         "transform 0.2s ease-in-out";
-      document.getElementById("main").style.marginLeft = "0px";
+      // document.getElementById("main").style.marginLeft = "0px";
       document.getElementById("footer").style.marginLeft = "300px";
     } else {
       document.getElementById("sidebar").style.marginLeft = "0px";
@@ -71,7 +71,7 @@ function LayoutData() {
       document.getElementById("sidebar").style.display = "block";
       document.getElementById("sidebar").style.transition =
         "transform 0.2s ease-in-out";
-      document.getElementById("main").style.marginLeft = "100px";
+      document.getElementById("main").style.marginLeft = "0px";
     }
   };
 
@@ -90,6 +90,13 @@ function LayoutData() {
         }
       } catch (error) {
         console.log("get user api is not working: ", error);
+        if (error?.response?.statusText === "Unauthorized") {
+          localStorage.clear();
+          setTimeout(() => {
+            toast.error("Token expired please login again into your account");
+          }, 2000);
+          navigate("/");
+        }
       }
     })();
   }, []);
@@ -137,7 +144,7 @@ function LayoutData() {
               border: "none",
               background: "none",
             }}
-            onClick={() => navigate('/profilepage')}
+            onClick={() => navigate("/profilepage")}
           >
             <img
               src={avatarURI}
@@ -158,7 +165,7 @@ function LayoutData() {
       >
         <ul className="sidebar-nav" id="sidebar-nav">
           <li className="nav-item">
-            <NavLink className="nav-link" to={"/login"}>
+            <NavLink className="nav-link" to={"/"}>
               <MdHomeFilled color="#19A7CE" size="18" />
               <span className="ms-2" style={{ color: "black" }}>
                 Home
@@ -211,10 +218,8 @@ function LayoutData() {
       {/*=========================SideBar End==========================*/}
 
       <main id="main" className="main" style={{ backgroundColor: "#fff" }}>
-        <div
-          style={{ minHeight: "570px", backgroundColor: "#fff" }}
-          className="main2"
-        >
+        <div style={{minHeight: '590px'}}>
+
           <Outlet />
         </div>
       </main>

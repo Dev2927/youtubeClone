@@ -3,6 +3,7 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import coverImage from "../../assets/coverImage.jpg";
 import { useNavigate } from "react-router-dom";
+import { TbEdit } from "react-icons/tb";
 
 function ProfilePage() {
   const [data, setData] = useState();
@@ -300,6 +301,7 @@ function ProfilePage() {
                         width="100%"
                         height="100%"
                       />
+
                       <div
                         style={{
                           height: 130,

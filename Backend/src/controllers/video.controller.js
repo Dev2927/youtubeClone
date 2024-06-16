@@ -151,6 +151,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 // get video by id
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  console.log('This is params: ', req.params)
 
   if (!isValidObjectId(videoId)) {
     throw new ApiError(400, "This video id is not valid");
@@ -159,6 +160,8 @@ const getVideoById = asyncHandler(async (req, res) => {
   const video = await Video.findById({
     _id: videoId,
   });
+
+  console.log('This is video: ', video)
 
   if (!video) {
     throw new ApiError(404, "video not found");

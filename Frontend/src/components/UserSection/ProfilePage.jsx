@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import coverImage from "../../assets/coverImage.jpg";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TbEdit } from "react-icons/tb";
 
 function ProfilePage() {
@@ -226,7 +226,7 @@ function ProfilePage() {
           <nav>
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href="index.html">Home</a>
+                <Link to={'/'}>Home</Link>
               </li>
               <li className="breadcrumb-item">Users</li>
               <li className="breadcrumb-item active">Profile</li>

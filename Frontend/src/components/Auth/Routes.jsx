@@ -3,7 +3,9 @@ import Layout from "../Layout/Layout";
 import Login from '../Auth/Login'
 import Signup from '../Auth/Signup'
 import ProfilePage from "../UserSection/ProfilePage";
-import ShowAllVideo from "../UserSection/ShowAllVideo";
+import ShowAllVideo from "../Videos/ShowAllVideo";
+import UploadVideos from "../Videos/UploadVideos";
+import Video from "../Videos/Video";
 
 const router = createBrowserRouter([
     {
@@ -17,6 +19,14 @@ const router = createBrowserRouter([
             {
                 path: '/',
                 element: <ShowAllVideo />
+            },
+            {
+                path: '/upload/videos',
+                element: <UploadVideos />
+            },
+            {
+                path: '/video',
+                element: <Video />
             }
         ],
     },

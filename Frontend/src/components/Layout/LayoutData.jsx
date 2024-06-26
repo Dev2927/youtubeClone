@@ -95,7 +95,7 @@ function LayoutData() {
           setTimeout(() => {
             toast.error("Token expired please login again into your account");
           }, 2000);
-          navigate("/");
+          window.location.reload()
         }
       }
     })();

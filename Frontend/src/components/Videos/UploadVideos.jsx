@@ -18,6 +18,7 @@ function UploadVideos() {
     videoFile: null,
     thumbnail: null,
   });
+  const [loading, setLoading] = useState(false);
 
   let jwt = localStorage.getItem("@JWT");
 
@@ -71,6 +72,7 @@ function UploadVideos() {
     if (sendBody.thumbnail) {
       formData.append("thumbnail", sendBody.thumbnail);
     }
+    setLoading(true);
     try {
       const response = await axios.post(`/api/v1/videos/`, formData, {
         headers: {
@@ -87,12 +89,15 @@ function UploadVideos() {
           videoFile: null,
           thumbnail: null,
         });
+        setLoading(false);
       } else {
         toast.error(response.data.message);
+        setLoading(false);
       }
     } catch (error) {
       console.log("Upload API is not working: ", error?.message);
       toast.error(error?.response?.data?.message);
+      setLoading(false);
     }
   };
 
@@ -155,7 +160,13 @@ function UploadVideos() {
             </form>
           </div>
           <button className="logoutButton mt-5" onClick={handleUpload}>
-            Upload
+            {loading ? (
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            ) : (
+              "Upload"
+            )}
           </button>
         </div>
         <div className="card col-md-6">

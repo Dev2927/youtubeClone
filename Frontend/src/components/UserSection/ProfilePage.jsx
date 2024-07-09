@@ -26,6 +26,12 @@ function ProfilePage() {
     oldPassword: "",
     newPassword: "",
   });
+  const [sendBodyForAvatar, setSendBodyForAvatar] = useState({
+    avatar: null,
+  });
+  const [sendBodyForCover, setSendBodyForCover] = useState({
+    coverImage: null,
+  });
 
   let jwt = localStorage.getItem("@JWT");
   const navigate = useNavigate();
@@ -216,6 +222,62 @@ function ProfilePage() {
     }
   };
 
+  const handleFileChangeForAvatar = (e) => {
+    const { name, files } = e.target;
+    setSendBodyForAvatar((prevState) => ({
+      ...prevState,
+      [name]: files[0],
+    }));
+  };
+
+  const handleFileChangeForCover = (e) => {
+    const { name, files } = e.target;
+    setSendBodyForCover((prevState) => ({
+      ...prevState,
+      [name]: files[0],
+    }));
+  };
+
+  const handleUpdateCoverImage = async () => {
+    const formData = new FormData();
+    formData.append("coverImage", sendBodyForCover.coverImage);
+    try {
+      const response = await axios.patch(
+        `/api/v1/videos/cover-image`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+      console.log("Response of update cover image: ", response.data);
+    } catch (error) {
+      console.log("update cover image API is not working: ", error?.message);
+    }
+  };
+
+  const handleUpdaterAvatar = async () => {
+    const formData = new FormData();
+    formData.append("avatar", sendBodyForAvatar.avatar);
+    try {
+      const response = await axios.patch(
+        `/api/v1/videos/avatar`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+      console.log("Response of update of avatar: ", response.data);
+    } catch (error) {
+      console.log("update cover image API is not working: ", error?.message);
+    }
+  };
+
   return (
     <main id="main" className="main">
       <Toaster position="top-center" reverseOrder={false} />
@@ -226,7 +288,7 @@ function ProfilePage() {
           <nav>
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <Link to={'/'}>Home</Link>
+                <Link to={"/"}>Home</Link>
               </li>
               <li className="breadcrumb-item">Users</li>
               <li className="breadcrumb-item active">Profile</li>
@@ -243,7 +305,7 @@ function ProfilePage() {
         <div className="row">
           <div className="col-xl-4">
             <div className="card">
-              <div className="card-body profile-card pt-4 d-flex flex-column align-items-center">
+              <div className="card-body profile-card pt-4 d-flex flex-column align-items-center m-0">
                 <img
                   src={data?.avatar}
                   alt="Profile"
@@ -336,6 +398,22 @@ function ProfilePage() {
                     <div className="row">
                       <div className="col-lg-3 col-md-4 label">Email</div>
                       <div className="col-lg-9 col-md-8">{data?.email}</div>
+                    </div>
+                    <div className="">
+                      <button
+                        className="logoutButton"
+                        data-bs-toggle="modal"
+                        data-bs-target="#largeModalForAvatar"
+                      >
+                        Edit Avatar
+                      </button>
+                      <button
+                        className="logoutButton"
+                        data-bs-toggle="modal"
+                        data-bs-target="#largeModalForCoverImage"
+                      >
+                        Edit Coverimage
+                      </button>
                     </div>
                   </div>
 
@@ -518,6 +596,148 @@ function ProfilePage() {
           </div>
         </div>
       </section>
+      <div className="modal fade" id="largeModalForAvatar" tabindex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Edit Avatar</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div
+              className="modal-body d-flex justify-content-center align-items-center gap-4"
+              style={{ flexDirection: "column" }}
+            >
+              <div
+                className=""
+                style={{
+                  height: 200,
+                  width: 200,
+                }}
+              >
+                {sendBodyForAvatar.avatar ? (
+                  <img
+                    src={URL.createObjectURL(sendBodyForAvatar.avatar)}
+                    alt="Upload cover image of your choice"
+                    width="100%"
+                    height="100%"
+                    style={{ borderRadius: 200 }}
+                  />
+                ) : (
+                  <img
+                    src={data?.avatar}
+                    alt="Upload cover image of your choice"
+                    width="100%"
+                    height="100%"
+                    style={{ borderRadius: 200 }}
+                  />
+                )}
+              </div>
+              <div className="">
+                <input
+                  className="form-control"
+                  type="file"
+                  id="formFilePhoto"
+                  name="avatar"
+                  accept="image/*"
+                  onChange={handleFileChangeForAvatar}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleUpdaterAvatar}
+              >
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="modal fade" id="largeModalForCoverImage" tabindex="-1">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Edit Cover Image</h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div
+              className="modal-body d-flex justify-content-center align-items-center gap-4"
+              style={{ flexDirection: "column" }}
+            >
+              <div
+                className=""
+                style={{
+                  height: 300,
+                  width: 700,
+                }}
+              >
+                {sendBodyForCover.coverImage ? (
+                  <img
+                    src={URL.createObjectURL(sendBodyForCover.coverImage)}
+                    alt="Upload cover image of your choice"
+                    width="100%"
+                    height="100%"
+                    style={{ borderRadius: 20 }}
+                  />
+                ) : (
+                  <img
+                    src={data?.coverImage}
+                    alt="Upload cover image of your choice"
+                    width="100%"
+                    height="100%"
+                    style={{ borderRadius: 200 }}
+                  />
+                )}
+              </div>
+              <div className="">
+                <input
+                  className="form-control"
+                  type="file"
+                  id="formFilePhoto"
+                  name="coverImage"
+                  accept="image/*"
+                  onChange={handleFileChangeForCover}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleUpdateCoverImage}
+              >
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

@@ -6,6 +6,8 @@ import ProfilePage from "../UserSection/ProfilePage";
 import ShowAllVideo from "../Videos/ShowAllVideo";
 import UploadVideos from "../Videos/UploadVideos";
 import Video from "../Videos/Video";
+import WatchHistory from "../Videos/WatchHistory";
+import Loader from "../Layout/Loader";
 
 const router = createBrowserRouter([
     {
@@ -27,6 +29,10 @@ const router = createBrowserRouter([
             {
                 path: '/video',
                 element: <Video />
+            },
+            {
+                path: '/videos/history',
+                element: <WatchHistory />
             }
         ],
     },

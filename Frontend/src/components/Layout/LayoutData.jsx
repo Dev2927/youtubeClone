@@ -185,7 +185,7 @@ function LayoutData() {
           {/*<!-- End Your Channel Nav -->*/}
 
           <li className="nav-item">
-            <NavLink className="nav-link" to={"/home/dash"}>
+            <NavLink className="nav-link" to={"/videos/history"}>
               <RiChatHistoryFill color="#19A7CE" size="18" />
               <span className="ms-2" style={{ color: "black" }}>
                 History

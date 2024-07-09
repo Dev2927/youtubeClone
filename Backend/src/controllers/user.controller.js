@@ -274,7 +274,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.files?.path;
+  const avatarLocalPath = req.files?.avatar[0]?.path
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is missing");
@@ -304,7 +304,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-  const coverImageLocalPath = req.files?.path;
+  const coverImageLocalPath = req?.file?.path;
+  console.log('This is update cImage : ', coverImageLocalPath)
 
   if (!coverImageLocalPath) {
     throw new ApiError(400, "Cover Image is missing");
@@ -403,6 +404,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
+  
   const user = await User.aggregate([
     {
       $match: {

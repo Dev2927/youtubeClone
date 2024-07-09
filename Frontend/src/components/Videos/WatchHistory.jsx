@@ -3,9 +3,8 @@ import axios from "axios";
 import noVideo from "../../assets/noVideo.png";
 import noImage from "../../assets/noImage.jpg";
 import { useNavigate } from "react-router-dom";
-import { MutatingDots } from "react-loader-spinner";
+import { InfinitySpin } from "react-loader-spinner";
 import { MdDelete } from "react-icons/md";
-import toast, { Toaster } from "react-hot-toast";
 
 function ShowAllVideo() {
   const [allVideos, setAllVideos] = useState([]);
@@ -17,64 +16,31 @@ function ShowAllVideo() {
   let id = localStorage.getItem("@ID");
 
   useEffect(() => {
-    getVideos();
-  }, []);
-
-  const getVideos = async () => {
-    setScreenLoading(true);
-    try {
-      const response = await axios.get(`/api/v1/videos/`, {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      });
-      // console.log(
-      //   "Response of Get All videos api: ",
-      //   response.data.data.videos
-      // );
-      if (response.data.success === true) {
-        const videos = response.data?.data?.videos.map((video) => {
-          return {
-            ...video,
-            isDeleteIcon: video.videoOwner === id,
-          };
+    (async () => {
+      setScreenLoading(true);
+      try {
+        const response = await axios.get(`/api/v1/users/history`, {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
         });
-        setAllVideos(videos);
-        setScreenLoading(false);
-      } else {
-        setAllVideos([]);
+        console.log(
+          "Response of watch history : ",
+          response.data
+        );
+        if (response.data.success === true) {
+          setAllVideos(response.data.data);
+          setScreenLoading(false);
+        } else {
+          setAllVideos([]);
+          setScreenLoading(false);
+        }
+      } catch (error) {
+        console.log("Get All videos api is not working: ", error);
         setScreenLoading(false);
       }
-    } catch (error) {
-      console.log("Get All videos api is not working: ", error);
-      setScreenLoading(false);
-    }
-  };
-
-  const handleDeleteButton = async (videoId) => {
-    const userConfirmed = window.confirm(
-      "Are you sure you want to delete this video?"
-    );
-    if (!userConfirmed) {
-      return;
-    }
-    setScreenLoading(true)
-    try {
-      const response = await axios.delete(`/api/v1/videos/${videoId}`);
-      console.log("This is delete api res : ", response);
-      if (response.data.success === true) {
-        toast.success("Video Deleted");
-        getVideos();
-        setScreenLoading(false)
-      } else {
-        toast.error("Unable to delete please try again later");
-        setScreenLoading(false)
-      }
-    } catch (error) {
-      console.log("Delete api is not working : ", error);
-      setScreenLoading(false)
-    }
-  };
+    })();
+  }, []);
 
   return (
     <div style={{ marginLeft: "150px" }} className="mt-4">
@@ -83,9 +49,9 @@ function ShowAllVideo() {
           className="w-100 d-flex justify-content-center align-items-center"
           style={{ height: "100vh" }}
         >
-          <MutatingDots
+          <InfinitySpin
             visible={true}
-            width="100"
+            width="200"
             color="#4fa94d"
             ariaLabel="infinity-spin-loading"
           />
@@ -94,27 +60,27 @@ function ShowAllVideo() {
         <>
           <div className="pagetitle d-flex justify-content-between">
             <div>
-              <h1>Dashboard</h1>
+              <h1>Watch history</h1>
               <nav>
-                <ol className="breadcrumb">
+                {/* <ol className="breadcrumb">
                   <li className="breadcrumb-item">
                     <a href="#">Home</a>
                   </li>
                   <li className="breadcrumb-item active">Dashboard</li>
-                </ol>
+                </ol> */}
               </nav>
             </div>
-            <button
+            {/* <button
               className="logoutButton"
               onClick={() => navigate("/upload/videos")}
             >
               Upload
-            </button>
+            </button> */}
           </div>
 
-          {allVideos.length > 0 ? (
+          {allVideos?.length > 0 ? (
             <>
-              <div className="col-md-12 mt-4">
+              <div className="col-lg-12 mt-4">
                 <div className="row">
                   {allVideos &&
                     allVideos.map((item, i) => (
@@ -123,8 +89,12 @@ function ShowAllVideo() {
                         style={{
                           border: "none",
                           background: "none",
+                          cursor: "pointer",
                         }}
                         key={i}
+                        onClick={() =>
+                          navigate("/video", { state: { ID: item._id } })
+                        }
                       >
                         <div className="card info-card sales-card">
                           <div className="card-body m-0 p-0">
@@ -137,13 +107,7 @@ function ShowAllVideo() {
                                 style={{
                                   borderBottom: "1px solid gray",
                                   overflow: "hidden",
-                                  cursor: "pointer",
                                 }}
-                                onClick={() =>
-                                  navigate("/video", {
-                                    state: { ID: item._id },
-                                  })
-                                }
                               >
                                 {item.thumbnail.url ? (
                                   <img
@@ -163,27 +127,13 @@ function ShowAllVideo() {
                                   />
                                 )}
                               </div>
-                              <div className="ps-3 py-1 mt-2 d-flex justify-content-between align-items-start">
-                                <div>
-                                  <h6 className="p-1 card-title fw-bold ">
-                                    {item.title}
-                                  </h6>
-                                  <span className="mt-2 p-1">
-                                    {item.description}
-                                  </span>{" "}
-                                </div>
-                                {item.isDeleteIcon && (
-                                  <button
-                                    style={{
-                                      border: "none",
-                                      background: "none",
-                                    }}
-                                    onClick={() => handleDeleteButton(item._id)}
-                                    className=""
-                                  >
-                                    <MdDelete color="red" />
-                                  </button>
-                                )}
+                              <div className="ps-3 mt-2">
+                                <h6 className="p-1 card-title fw-bold ">
+                                  {item.title}
+                                </h6>
+                                <span className="mt-2 p-1">
+                                  {item.description}
+                                </span>{" "}
                               </div>
                             </div>
                           </div>

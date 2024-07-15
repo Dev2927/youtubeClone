@@ -28,10 +28,10 @@ function ShowAllVideo() {
           Authorization: `Bearer ${jwt}`,
         },
       });
-      // console.log(
-      //   "Response of Get All videos api: ",
-      //   response.data.data.videos
-      // );
+      console.log(
+        "Response of Get All videos api: ",
+        response.data.data.videos
+      );
       if (response.data.success === true) {
         const videos = response.data?.data?.videos.map((video) => {
           return {

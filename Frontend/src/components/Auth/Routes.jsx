@@ -7,6 +7,9 @@ import ShowAllVideo from "../Videos/ShowAllVideo";
 import UploadVideos from "../Videos/UploadVideos";
 import Video from "../Videos/Video";
 import WatchHistory from "../Videos/WatchHistory";
+import YourVideos from "../Videos/YourVideos";
+import { Tweet } from "../../../../Backend/src/models/tweet.model";
+import Tweets from "../Tweets/Tweets";
 
 const router = createBrowserRouter([
     {
@@ -32,6 +35,14 @@ const router = createBrowserRouter([
             {
                 path: '/videos/history',
                 element: <WatchHistory />
+            },
+            {
+                path: '/your/videos',
+                element: <YourVideos />
+            },
+            {
+                path: '/tweets',
+                element: <Tweets />
             }
         ],
     },

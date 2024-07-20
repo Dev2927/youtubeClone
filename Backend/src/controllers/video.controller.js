@@ -320,6 +320,60 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, video, "video toggle successfully!!"));
 });
 
+
+// get all videos for admin
+const getAllVideosForAdmin = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, query = "", sortBy = "createdAt", sortType = 1 } = req.query;
+
+  const queryRegex = new RegExp(query, "i");
+
+  const aggregatePipeline = [
+    {
+      $match: {
+        $or: [
+          { title: { $regex: queryRegex } },
+          { description: { $regex: queryRegex } },
+        ],
+      },
+    },
+    {
+      $sort: {
+        [sortBy]: parseInt(sortType),
+      },
+    },
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: parseInt(limit),
+    },
+  ];
+
+  try {
+    const videos = await Video.aggregate(aggregatePipeline);
+    const total = await Video.countDocuments({
+      $or: [
+        { title: { $regex: queryRegex } },
+        { description: { $regex: queryRegex } },
+      ],
+    });
+
+    const result = {
+      videos,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      totalVideos: total,
+    };
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, result, "fetched all videos successfully !!"));
+  } catch (error) {
+    console.log("getting error while fetching all videos:", error);
+    throw new ApiError(500, "Something went wrong while fetching videos");
+  }
+});
+
 export {
   publishAVideo,
   updateVideo,
@@ -327,4 +381,6 @@ export {
   deleteVideo,
   togglePublishStatus,
   getAllVideos,
+  getAllVideosForAdmin,
 };
+

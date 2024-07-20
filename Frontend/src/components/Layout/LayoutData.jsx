@@ -1,6 +1,5 @@
-import { Outlet } from "react-router-dom";
 import logoImg from "../../assets/dev.png";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { MdHomeFilled } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
@@ -9,6 +8,7 @@ import { MdVideoCameraFront } from "react-icons/md";
 import { AiFillLike } from "react-icons/ai";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { FaTwitter } from "react-icons/fa";
 
 function LayoutData() {
   const [placeholder, setPlaceholder] = useState("Type to search...");
@@ -135,6 +135,12 @@ function LayoutData() {
           </form>
         </div>
 
+        <div className="w-100 text-end me-3">
+          <button style={{border: 'none', background: 'none'}} onClick={() => navigate('/tweets')}>
+            <FaTwitter color="blue" size={30} />
+          </button>
+        </div>
+
         <div>
           <button
             style={{
@@ -195,7 +201,7 @@ function LayoutData() {
           {/*<!-- End History Nav -->*/}
 
           <li className="nav-item">
-            <NavLink className="nav-link" to={"/home/dash"}>
+            <NavLink className="nav-link" to={"/your/videos"}>
               <MdVideoCameraFront color="#19A7CE" size="18" />
               <span className="ms-2" style={{ color: "black" }}>
                 Your Video

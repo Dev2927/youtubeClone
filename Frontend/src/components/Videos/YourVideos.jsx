@@ -7,7 +7,7 @@ import { MutatingDots } from "react-loader-spinner";
 import { MdDelete } from "react-icons/md";
 import toast, { Toaster } from "react-hot-toast";
 
-function ShowAllVideo() {
+function YourVideos() {
   const [allVideos, setAllVideos] = useState([]);
   const [screenLoading, setScreenLoading] = useState(false);
 
@@ -94,13 +94,13 @@ function ShowAllVideo() {
         <>
           <div className="pagetitle d-flex justify-content-between">
             <div>
-              <h1>Dashboard</h1>
+              <h1>Your Videos</h1>
               <nav>
                 <ol className="breadcrumb">
                   <li className="breadcrumb-item">
-                    <a href="#">Home</a>
+                    <a href="/">all videos</a>
                   </li>
-                  <li className="breadcrumb-item active">Dashboard</li>
+                  <li className="breadcrumb-item active">your videos</li>
                 </ol>
               </nav>
             </div>
@@ -119,7 +119,6 @@ function ShowAllVideo() {
                   {allVideos &&
                     allVideos.map(
                       (item, i) =>
-                        item.isPublished && (
                           <div
                             className="col-xxl-4 col-md-6"
                             style={{
@@ -194,7 +193,7 @@ function ShowAllVideo() {
                             </div>
                           </div>
                         )
-                    )}
+                    }
                 </div>
               </div>
             </>
@@ -212,4 +211,4 @@ function ShowAllVideo() {
   );
 }
 
-export default ShowAllVideo;
+export default YourVideos;

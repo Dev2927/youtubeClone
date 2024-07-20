@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { FaEdit } from "react-icons/fa";
+import { BiSolidLike } from "react-icons/bi";
 import toast, { Toaster } from "react-hot-toast";
 
 function Video() {
@@ -14,8 +15,11 @@ function Video() {
   const [sendBody, setSendBody] = useState({
     videoFile: null,
   });
+  const [likedVideo, setLikedVideo] = useState([]);
 
   const ID = location.state && location.state.ID ? location.state.ID : null;
+
+  console.log('this is videoID : ', ID)
 
   useEffect(() => {
     showVideo();
@@ -29,15 +33,13 @@ function Video() {
           Authorization: `Bearer ${jwt}`,
         },
       });
-      console.log("Res of vide : ", {
-        ...response.data.data,
-        showPublish: response.data.data.videoOwner == userId,
-      });
+      console.log("Res of video : ", response.data);
       if (response.data.success === true) {
         setSingleVideoData({
           ...response.data.data,
           showPublish: response.data.data.videoOwner == userId,
         });
+        allLikeVideos();
       } else {
         toast.error("Unable to show your video");
         setSingleVideoData(null);
@@ -47,6 +49,27 @@ function Video() {
       console.error("Error fetching video by ID:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const allLikeVideos = async () => {
+    try {
+      const response = await axios.get(`/api/v1/likes/videos`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+      console.log('response of all like videos : ', response.data)
+      if (response.data.success === true) {
+        let alreadyLiked = response?.data?.data?.map((item) => ({
+          ...item,
+          alreadyLiked: item?._id === ID,
+        }));
+        setLikedVideo(alreadyLiked);
+        console.log("already liked : ", alreadyLiked);
+      }
+    } catch (error) {
+      console.log("All like videos api is not working : ", error);
     }
   };
 
@@ -60,11 +83,10 @@ function Video() {
           },
         }
       );
-      console.log("this is publish video res : ", response.data.data.isPublished);
       if (response.data.success === true) {
-        if(response.data.data.isPublished){
+        if (response.data.data.isPublished) {
           toast.success("Video is ready to watched");
-        }else{
+        } else {
           toast.success("Video is removed from all videos");
         }
         showVideo();
@@ -76,6 +98,27 @@ function Video() {
       console.log("publish api is not working : ", error);
     }
   };
+
+  const handleToggleLike = async () => {
+    try {
+      const response = await axios.post(`/api/v1/likes/toggle/v/${ID}`, null, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+      console.log("this is response of like video api : ", response.data);
+      if(response.data.success === true){
+        showVideo()
+      }else{
+        toast.error('Unable to like video')
+      }
+    } catch (error) {
+      console.log("Error in like video api : ", error);
+    }
+  };
+
+
+  console.log('DATA : ', likedVideo)
 
   return (
     <div style={{ marginLeft: "150px" }} className="mt-4">
@@ -142,7 +185,35 @@ function Video() {
                   Your browser does not support the video tag.
                 </video>
               </div>
-              <div className="card-footer mt-5"></div>
+              <div className="card-footer mt-5 d-flex justify-content-end">
+                {!likedVideo && (
+                  <button
+                    style={{ border: "none", background: "none" }}
+                    onClick={handleToggleLike}
+                    className=""
+                  >
+                    <BiSolidLike size={25}/>
+                  </button>
+                )}
+                {likedVideo?.length > 0 &&
+                  likedVideo.map((item) =>
+                    item?.alreadyLiked ? (
+                      <button
+                        style={{ border: "none", background: "none" }}
+                        onClick={handleToggleLike}
+                      >
+                        <BiSolidLike color="red" size={25}/>
+                      </button>
+                    ) : (
+                      <button
+                        style={{ border: "none", background: "none" }}
+                        onClick={handleToggleLike}
+                      >
+                        <BiSolidLike size={25} />
+                      </button>
+                    )
+                  )}
+              </div>
             </>
           )}
         </div>

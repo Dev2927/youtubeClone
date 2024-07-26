@@ -16,13 +16,15 @@ function Video() {
     videoFile: null,
   });
   const [likedVideo, setLikedVideo] = useState([]);
+  const [commentData, setCommentData] = useState([])
 
   const ID = location.state && location.state.ID ? location.state.ID : null;
 
-  console.log('this is videoID : ', ID)
+  console.log("this is videoID : ", ID);
 
   useEffect(() => {
     showVideo();
+    showAllComments()
   }, [ID, jwt]);
 
   const showVideo = async () => {
@@ -33,7 +35,7 @@ function Video() {
           Authorization: `Bearer ${jwt}`,
         },
       });
-      console.log("Res of video : ", response.data);
+      // console.log("Res of video : ", response.data);
       if (response.data.success === true) {
         setSingleVideoData({
           ...response.data.data,
@@ -52,6 +54,19 @@ function Video() {
     }
   };
 
+  const showAllComments = async () => {
+    try {
+      const response = await axios.get(`/api/v1/comments/${ID}`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+      console.log('this is res of comments : ', response)
+    } catch (error) {
+      console.log('error while fetching comments : ', error)
+    }
+  }
+
   const allLikeVideos = async () => {
     try {
       const response = await axios.get(`/api/v1/likes/videos`, {
@@ -59,14 +74,15 @@ function Video() {
           Authorization: `Bearer ${jwt}`,
         },
       });
-      console.log('response of all like videos : ', response.data)
       if (response.data.success === true) {
-        let alreadyLiked = response?.data?.data?.map((item) => ({
-          ...item,
-          alreadyLiked: item?._id === ID,
+        const likedVideos = response.data.data.filter((item) =>
+          item.likedBy.some((user) => user._id === ID)
+        );
+        const videosWithAlreadyLiked = likedVideos.map((video) => ({
+          ...video,
+          alreadyLiked: true,
         }));
-        setLikedVideo(alreadyLiked);
-        console.log("already liked : ", alreadyLiked);
+        setLikedVideo(videosWithAlreadyLiked);
       }
     } catch (error) {
       console.log("All like videos api is not working : ", error);
@@ -107,18 +123,15 @@ function Video() {
         },
       });
       console.log("this is response of like video api : ", response.data);
-      if(response.data.success === true){
-        showVideo()
-      }else{
-        toast.error('Unable to like video')
+      if (response.data.success === true) {
+        showVideo();
+      } else {
+        toast.error("Unable to like video");
       }
     } catch (error) {
       console.log("Error in like video api : ", error);
     }
   };
-
-
-  console.log('DATA : ', likedVideo)
 
   return (
     <div style={{ marginLeft: "150px" }} className="mt-4">
@@ -186,49 +199,43 @@ function Video() {
                 </video>
               </div>
               <div className="card-footer mt-5 d-flex justify-content-end">
-                {!likedVideo && (
+                {likedVideo.length == 0 && (
                   <button
                     style={{ border: "none", background: "none" }}
                     onClick={handleToggleLike}
                     className=""
                   >
-                    <BiSolidLike size={25}/>
+                    <BiSolidLike size={25} />
                   </button>
                 )}
                 {likedVideo?.length > 0 &&
-                  likedVideo.map((item) =>
-                    item?.alreadyLiked ? (
-                      <button
-                        style={{ border: "none", background: "none" }}
-                        onClick={handleToggleLike}
-                      >
-                        <BiSolidLike color="red" size={25}/>
-                      </button>
-                    ) : (
-                      <button
-                        style={{ border: "none", background: "none" }}
-                        onClick={handleToggleLike}
-                      >
-                        <BiSolidLike size={25} />
-                      </button>
-                    )
+                  likedVideo.map(
+                    (item) =>
+                      item?.alreadyLiked && (
+                        <button
+                          style={{ border: "none", background: "none" }}
+                          onClick={handleToggleLike}
+                        >
+                          <BiSolidLike color="red" size={25} />
+                        </button>
+                      )
                   )}
               </div>
             </>
           )}
         </div>
-        <div className="card col-md-4">
-          <div className="card-header">Header</div>
+        <div className="card col-md-4 m-0 p-0">
+          <div className="card-header">Comment Section</div>
           <div className="card-body">
-            <h5 className="card-title">Card with header and footer</h5>
-            Ut in ea error laudantium quas omnis officia. Sit sed praesentium
-            voluptas. Corrupti inventore consequatur nisi necessitatibus modi
-            consequuntur soluta id. Enim autem est esse natus assumenda. Non
-            sunt dignissimos officiis expedita. Consequatur sint repellendus
-            voluptas. Quidem sit est nulla ullam. Suscipit debitis ullam iusto
-            dolorem animi dolorem numquam. Enim fuga ipsum dolor nulla quia ut.
-            Rerum dolor voluptatem et deleniti libero totam numquam nobis
-            distinctio. Sit sint aut. Consequatur rerum in.
+            <ul className="list-group list-group-flush">
+              <li className="list-group-item">An item</li>
+              <li className="list-group-item">A second item</li>
+              <li className="list-group-item">A third item</li>
+              <li className="list-group-item">A fourth item</li>
+              <li className="list-group-item disabled" aria-disabled="true">
+                A disabled item
+              </li>
+            </ul>
           </div>
           <div className="card-footer">Footer</div>
         </div>

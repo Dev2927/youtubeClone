@@ -54,8 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
-  console.log("AvatarLocalPath: ", avatarLocalPath);
-  console.log("CoverImageLocalPath: ", coverImageLocalPath);
+  // console.log("AvatarLocalPath: ", avatarLocalPath);
+  // console.log("CoverImageLocalPath: ", coverImageLocalPath);
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
@@ -68,8 +68,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is required");
   }
 
-  console.log("Avatar: ", avatar);
-  console.log("CoverImage: ", coverImage);
+  // console.log("Avatar: ", avatar);
+  // console.log("CoverImage: ", coverImage);
 
   const user = await User.create({
     fullName,
@@ -97,7 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  console.log('EMAIl: ', email)
+  // console.log('EMAIl: ', email)
 
   if (!email) {
     throw new ApiError(400, "email is required");
@@ -105,7 +105,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  console.log("NF: ", user);
+  // console.log("NF: ", user);
 
   if (!user) {
     throw new ApiError(404, "User doesn't exist");
@@ -188,7 +188,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET
     );
 
-    console.log("DECODe: ", decodedToken._id);
+    // console.log("DECODe: ", decodedToken._id);
 
     const user = User.findById(decodedToken?._id);
 
@@ -196,7 +196,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    console.log("AVA?: ", user._id);
+    // console.log("AVA?: ", user._id);
 
     const options = {
       httpOnly: true,
@@ -250,7 +250,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { fullName, email, username } = req.body;
 
-  console.log('REQ_BODY: ', req.body)
+  // console.log('REQ_BODY: ', req.body)
 
   if (!fullName || !email  || !username) {
     throw new ApiError(400, "All fields are required");
@@ -305,7 +305,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req?.file?.path;
-  console.log('This is update cImage : ', coverImageLocalPath)
+
+  // console.log('This is update cImage : ', coverImageLocalPath)
 
   if (!coverImageLocalPath) {
     throw new ApiError(400, "Cover Image is missing");

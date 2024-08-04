@@ -14,34 +14,71 @@ const getVideoComments = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video Id is not valid");
   }
 
-  const findVideo = await Video.findById({ videoId });
+  const findVideo = await Video.findById(videoId);
 
   if (!findVideo) {
     throw new ApiError(404, "Video not found");
   }
 
-  const getComments = await Comment.aggregate([
+  const getComments = Comment.aggregate([
     {
       $match: {
-        findVideo: new mongoose.Types.ObjectId(videoId),
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $lookup: {
+        from: "users", // The name of the User collection
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails",
+      },
+    },
+    {
+      $unwind: "$ownerDetails",
+    },
+    {
+      $project: {
+        content: 1,
+        video: 1,
+        owner: 1,
+        "ownerDetails.username": 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
   ]);
 
-  Comment.aggregatePaginate(getComments, {
+  const options = {
     page,
     limit,
-  });
+    customLabels: {
+      totalDocs: "totalComments",
+      docs: "comments",
+    },
+  };
+
+  const paginatedComments = await Comment.aggregatePaginate(
+    getComments,
+    options
+  );
 
   return res
-    .status(201)
-    .json(new ApiResponse(200, getComments, "Got all comments successfully"));
+    .status(200)
+    .json(
+      new ApiResponse(200, paginatedComments, "Got all comments successfully")
+    );
 });
 
 // Add a comment to a video
 const addComment = asyncHandler(async (req, res) => {
   const { comment } = req.body;
   const { videoId } = req.params;
+
+  console.log("this is comment body : ", comment);
 
   if (!comment || comment?.trim() === "") {
     throw new ApiError(400, "Comment is not valid");

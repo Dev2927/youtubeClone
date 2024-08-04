@@ -2,29 +2,30 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { FaEdit } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { BiSolidLike } from "react-icons/bi";
 import toast, { Toaster } from "react-hot-toast";
+import { FaLocationArrow } from "react-icons/fa";
+import { CiCircleCheck } from "react-icons/ci";
 
 function Video() {
   let jwt = localStorage.getItem("@JWT");
   let userId = localStorage.getItem("@ID");
   const location = useLocation();
+  const inputRef = useRef(null);
 
   const [singleVideoData, setSingleVideoData] = useState();
   const [loading, setLoading] = useState(false);
-  const [sendBody, setSendBody] = useState({
-    videoFile: null,
-  });
   const [likedVideo, setLikedVideo] = useState([]);
-  const [commentData, setCommentData] = useState([])
+  const [commentData, setCommentData] = useState([]);
+  const [comment, setComment] = useState("");
+  const [commentToggle, setCommentToggle] = useState(false);
 
   const ID = location.state && location.state.ID ? location.state.ID : null;
 
-  console.log("this is videoID : ", ID);
-
   useEffect(() => {
     showVideo();
-    showAllComments()
+    showAllComments();
   }, [ID, jwt]);
 
   const showVideo = async () => {
@@ -44,11 +45,12 @@ function Video() {
         allLikeVideos();
       } else {
         toast.error("Unable to show your video");
-        setSingleVideoData(null);
+        setSingleVideoData();
       }
     } catch (error) {
       toast.error("Something wrong please try again or restart your page");
       console.error("Error fetching video by ID:", error);
+      setSingleVideoData();
     } finally {
       setLoading(false);
     }
@@ -60,12 +62,22 @@ function Video() {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },
-      })
-      console.log('this is res of comments : ', response)
+      });
+      // console.log("this is res of comments : ", response?.data?.data.comments);
+      if (response.data.success === true) {
+        let newComments = response?.data?.data.comments.map((item) => ({
+          ...item,
+          isRights: item.owner === userId,
+        }));
+        setCommentData(newComments);
+      } else {
+        setCommentData([]);
+      }
     } catch (error) {
-      console.log('error while fetching comments : ', error)
+      console.log("error while fetching comments : ", error);
+      setCommentData([]);
     }
-  }
+  };
 
   const allLikeVideos = async () => {
     try {
@@ -83,9 +95,12 @@ function Video() {
           alreadyLiked: true,
         }));
         setLikedVideo(videosWithAlreadyLiked);
+      } else {
+        setLikedVideo([]);
       }
     } catch (error) {
       console.log("All like videos api is not working : ", error);
+      setLikedVideo([]);
     }
   };
 
@@ -130,6 +145,63 @@ function Video() {
       }
     } catch (error) {
       console.log("Error in like video api : ", error);
+    }
+  };
+
+  const handlePostComment = async () => {
+    let obj = {};
+    if (commentToggle) {
+      obj = {
+        newContent: comment,
+      };
+    }else{
+      obj = {
+        comment: comment,
+      };
+    }
+
+    try {
+      const response = commentToggle ? await axios.patch(`/api/v1/comments/c/${ID}`, obj, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      }) : await axios.post(`/api/v1/comments/${ID}`, obj, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+      console.log("res of add comment : ", response.data);
+      if (response.data.success === true) {
+        showAllComments();
+        setComment("");
+      } else {
+        toast.error("Unable to add comment");
+      }
+    } catch (error) {
+      toast.error("Unable to add comment");
+      console.log("post comment api is not working : ", error);
+    }
+  };
+
+  const handleCommentDelete = async (id) => {
+    const isConfirm = window.confirm("Do you want to delete this comment?");
+    if (!isConfirm) return;
+
+    try {
+      const response = await axios.delete(`/api/v1/comments/c/${id}`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+      if (response.data.success === true) {
+        toast.success("Comment deleted");
+        showAllComments();
+      } else {
+        toast.error("Unable to delete comment");
+      }
+    } catch (error) {
+      console.log("comment delete api is not working : ", error);
+      toast.error("Unable to delete comment");
     }
   };
 
@@ -210,11 +282,12 @@ function Video() {
                 )}
                 {likedVideo?.length > 0 &&
                   likedVideo.map(
-                    (item) =>
+                    (item, i) =>
                       item?.alreadyLiked && (
                         <button
                           style={{ border: "none", background: "none" }}
                           onClick={handleToggleLike}
+                          key={i}
                         >
                           <BiSolidLike color="red" size={25} />
                         </button>
@@ -226,100 +299,75 @@ function Video() {
         </div>
         <div className="card col-md-4 m-0 p-0">
           <div className="card-header">Comment Section</div>
-          <div className="card-body">
-            <ul className="list-group list-group-flush">
-              <li className="list-group-item">An item</li>
-              <li className="list-group-item">A second item</li>
-              <li className="list-group-item">A third item</li>
-              <li className="list-group-item">A fourth item</li>
-              <li className="list-group-item disabled" aria-disabled="true">
-                A disabled item
-              </li>
-            </ul>
+          <div className="card-body m-0 p-0">
+            {commentData.length > 0 ? (
+              commentData.map((item, ind) => (
+                <div
+                  className="d-flex gap-2 col-md-12 align-items-center"
+                  key={ind}
+                >
+                  <ul className="list-group list-group-flush px-3 w-100">
+                    <li
+                      className="list-group-item col-md-10"
+                      // style={{ borderBottom: "1px solid" }}
+                    >
+                      <div className="d-flex align-items-center gap-1">
+                        <CiCircleCheck className="text-success" />
+                        <strong>{item.ownerDetails.username}</strong>
+                      </div>
+                      <span className="ps-4">{item.content}</span>
+                    </li>
+                  </ul>
+                  {item.isRights && (
+                    <>
+                      <button
+                        style={{ border: "none", background: "none" }}
+                        className="col-md-1"
+                        onClick={() => {
+                          window.scroll(0, 500);
+                          inputRef.current.focus();
+                          setComment(item.content);
+                          setCommentToggle(true);
+                        }}
+                      >
+                        <FaEdit color="darkBlue" />
+                      </button>
+                      <button
+                        style={{ border: "none", background: "none" }}
+                        className="col-md-1"
+                        onClick={() => handleCommentDelete(item._id)}
+                      >
+                        <FaTrash color="red" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-3">
+                <span className="card-title">No Comments yet</span>
+              </div>
+            )}
           </div>
-          <div className="card-footer">Footer</div>
+          <div className="card-footer d-flex gap-2">
+            <input
+              className="form-control"
+              placeholder="Add a comment..."
+              style={{ width: "80%" }}
+              value={comment}
+              name="comment"
+              onChange={(e) => setComment(e.target.value)}
+              ref={inputRef}
+            />
+            <button
+              style={{ border: "none", background: "none" }}
+              onClick={handlePostComment}
+            >
+              <FaLocationArrow />
+            </button>
+          </div>
         </div>
       </div>
-      {/* <div className="modal fade" id="largeModalForUpdateVideo" tabIndex="1-">
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Update Video</h5>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div
-              className="modal-body d-flex justify-content-center align-items-center gap-4"
-              style={{ flexDirection: "column" }}
-            >
-              <div
-                style={{
-                  height: 300,
-                  width: 700
-                }}
-              >
-                {sendBody.videoFile ? (
-                  <video
-                    className="d-block w-100 mt-2"
-                    controls
-                    height="100%"
-                    width="100%"
-                  >
-                    <source
-                      src={URL.createObjectURL(sendBody.videoFile)}
-                      type={sendBody.videoFile.type}
-                    />
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
-                  <video
-                    className="d-block w-100 mt-2"
-                    controls
-                    height="100%"
-                    width="100%"
-                  >
-                    <source
-                      src={singleVideoData?.videoFile?.url}
-                      type="video/mp4"
-                    />
-                    Your browser does not support the video tag.
-                  </video>
-                 )}
-              </div>
-              <div>
-                <input
-                  className="form-control"
-                  type="file"
-                  id="formFileVideo"
-                  name="videoFile"
-                  accept="video/*"
-                  onChange={handleUpdateVideoFileChange}
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSaveChanges}
-              >
-                Save changes
-              </button>
-            </div>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 }

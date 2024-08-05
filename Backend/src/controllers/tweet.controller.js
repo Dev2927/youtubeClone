@@ -47,6 +47,29 @@ const getUserTweets = asyncHandler(async (req, res) => {
         owner: user._id,
       },
     },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "ownerDetails",
+      },
+    },
+    {
+      $unwind: "$ownerDetails",
+    },
+    {
+      $project: {
+        content: 1,
+        owner: 1,
+        "ownerDetails.username": 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
   ]);
 
   if (!tweets) {
@@ -120,7 +143,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You don't have permission to delete this tweet!");
   }
 
-  const deleteTheTweet = await Tweet.deleteOne(req.user._id);
+  const deleteTheTweet = await Tweet.deleteOne({ _id: tweetId});
 
   if (!deleteTheTweet) {
     throw new ApiError(500, "Something went wrong while deleting the tweet");

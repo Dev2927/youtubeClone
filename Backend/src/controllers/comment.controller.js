@@ -31,7 +31,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     },
     {
       $lookup: {
-        from: "users", // The name of the User collection
+        from: "users",
         localField: "owner",
         foreignField: "_id",
         as: "ownerDetails",
@@ -107,6 +107,8 @@ const addComment = asyncHandler(async (req, res) => {
 const updateComment = asyncHandler(async (req, res) => {
   const { newContent } = req.body;
   const { commentId } = req.params;
+  console.log('this is new content : ', newContent)
+  console.log('this is comment Id : ', commentId)
 
   if (!newContent || newContent?.trim() === "") {
     throw new ApiError(400, "Comment is not valid");

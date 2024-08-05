@@ -107,6 +107,8 @@ const addComment = asyncHandler(async (req, res) => {
 const updateComment = asyncHandler(async (req, res) => {
   const { newContent } = req.body;
   const { commentId } = req.params;
+  console.log('this is new content : ', newContent)
+  console.log('this is comment Id : ', commentId)
 
   if (!newContent || newContent?.trim() === "") {
     throw new ApiError(400, "Comment is not valid");

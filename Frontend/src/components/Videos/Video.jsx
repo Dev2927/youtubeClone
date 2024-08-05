@@ -9,17 +9,17 @@ import { FaLocationArrow } from "react-icons/fa";
 import { CiCircleCheck } from "react-icons/ci";
 
 function Video() {
+
   let jwt = localStorage.getItem("@JWT");
   let userId = localStorage.getItem("@ID");
   const location = useLocation();
-  const inputRef = useRef(null);
 
   const [singleVideoData, setSingleVideoData] = useState();
   const [loading, setLoading] = useState(false);
   const [likedVideo, setLikedVideo] = useState([]);
   const [commentData, setCommentData] = useState([]);
   const [comment, setComment] = useState("");
-  const [commentToggle, setCommentToggle] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
 
   const ID = location.state && location.state.ID ? location.state.ID : null;
 
@@ -149,27 +149,16 @@ function Video() {
   };
 
   const handlePostComment = async () => {
-    let obj = {};
-    if (commentToggle) {
-      obj = {
-        newContent: comment,
-      };
-    }else{
-      obj = {
-        comment: comment,
-      };
-    }
+    let obj = {
+      comment: comment,
+    };
 
     try {
-      const response = commentToggle ? await axios.patch(`/api/v1/comments/c/${ID}`, obj, {
+      const response = await axios.post(`/api/v1/comments/${ID}`, obj, {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },
-      }) : await axios.post(`/api/v1/comments/${ID}`, obj, {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      })
+      });
       console.log("res of add comment : ", response.data);
       if (response.data.success === true) {
         showAllComments();
@@ -202,6 +191,31 @@ function Video() {
     } catch (error) {
       console.log("comment delete api is not working : ", error);
       toast.error("Unable to delete comment");
+    }
+  };
+
+  const handleUpdateComment = async (id) => {
+    const obj = {
+      newContent: comment,
+    };
+
+    try {
+      const response = await axios.patch(`/api/v1/comments/c/${id}`, obj, {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      });
+      console.log('this is res of update comment : ', response.data)
+      if (response.data.success === true) {
+        showAllComments();
+        setComment("");
+        setEditingCommentId(null)
+      } else {
+        toast.error("unable to update comment");
+      }
+    } catch (error) {
+      toast.error("unable to update comment");
+      console.log("patch api of comment is not working : ", error);
     }
   };
 
@@ -306,7 +320,7 @@ function Video() {
                   className="d-flex gap-2 col-md-12 align-items-center"
                   key={ind}
                 >
-                  <ul className="list-group list-group-flush px-3 w-100">
+                  <ul className="list-group list-group-flush px-1 w-100">
                     <li
                       className="list-group-item col-md-10"
                       // style={{ borderBottom: "1px solid" }}
@@ -315,23 +329,43 @@ function Video() {
                         <CiCircleCheck className="text-success" />
                         <strong>{item.ownerDetails.username}</strong>
                       </div>
-                      <span className="ps-4">{item.content}</span>
+                      {editingCommentId === item._id ? (
+                        <input
+                          className="ms-3 form-control"
+                          placeholder="Add a comment..."
+                          style={{ width: "100%" }}
+                          value={comment}
+                          name="comment"
+                          onChange={(e) => setComment(e.target.value)}
+                        />
+                      ) : (
+                        <span className="ps-4">{item.content}</span>
+                      )}
                     </li>
                   </ul>
                   {item.isRights && (
                     <>
-                      <button
-                        style={{ border: "none", background: "none" }}
-                        className="col-md-1"
-                        onClick={() => {
-                          window.scroll(0, 500);
-                          inputRef.current.focus();
-                          setComment(item.content);
-                          setCommentToggle(true);
-                        }}
-                      >
-                        <FaEdit color="darkBlue" />
-                      </button>
+                      {editingCommentId === item._id ? (
+                        <button
+                          style={{ border: "none", background: "none" }}
+                          onClick={() => {
+                            handleUpdateComment(item._id);
+                          }}
+                        >
+                          <FaLocationArrow />
+                        </button>
+                      ) : (
+                        <button
+                          style={{ border: "none", background: "none" }}
+                          className="col-md-1"
+                          onClick={() => {
+                            setComment(item.content);
+                            setEditingCommentId(item._id);
+                          }}
+                        >
+                          <FaEdit color="darkBlue" />
+                        </button>
+                      )}
                       <button
                         style={{ border: "none", background: "none" }}
                         className="col-md-1"
@@ -353,11 +387,10 @@ function Video() {
             <input
               className="form-control"
               placeholder="Add a comment..."
-              style={{ width: "80%" }}
+              style={{ width: "90%" }}
               value={comment}
               name="comment"
               onChange={(e) => setComment(e.target.value)}
-              ref={inputRef}
             />
             <button
               style={{ border: "none", background: "none" }}

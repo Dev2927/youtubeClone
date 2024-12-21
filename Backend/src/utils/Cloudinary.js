@@ -19,12 +19,9 @@ const uploadOnCloudinary = async (localFilePath) => {
         console.log("Error in cloudinary code: ", err.message);  
       }
     });
-
-    console.log("Response of cloudinary: ", responce);
     return responce;
   } catch (error) {
     fs.unlinkSync(localFilePath);
-    // console.log("Error in cloudinary : ", error);
     return null;
   }
 };

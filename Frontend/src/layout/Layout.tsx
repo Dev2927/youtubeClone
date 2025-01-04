@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { SidebarDemo } from "./Sidebar";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -30,3 +31,16 @@ function Layout() {
 }
 
 export default Layout;
+=======
+import { SidebarDemo } from "./Sidebar"
+
+function Layout() {
+  return (
+    <div className="overflow-hidden w-full h-screen">
+        <SidebarDemo />
+    </div>
+  )
+}
+
+export default Layout
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+<<<<<<< HEAD
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,6 +9,12 @@ import { useAuthStore } from "@/auth/Auth.interface";
 import axios from "axios";
 import { BASE_URL } from "@/env";
 import { toast } from "sonner";
+=======
+import { Link } from "react-router-dom";
+import React, { useState, createContext, useContext } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { IconMenu2, IconX } from "@tabler/icons-react";
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
 
 interface Links {
   label: string;
@@ -167,6 +174,7 @@ export const SidebarLink = ({
   link: Links;
   className?: string;
 }) => {
+<<<<<<< HEAD
 
   const navigate = useNavigate()
   const { open, animate } = useSidebar();
@@ -214,16 +222,25 @@ export const SidebarLink = ({
   return (
     <Link
       to={"#"}
+=======
+  const { open, animate } = useSidebar();
+  return (
+    <Link
+      to={link.href}
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
       className={cn(
         "flex items-center justify-start gap-2  group/sidebar py-2",
         className
       )}
       {...props}
+<<<<<<< HEAD
       onClick={() => {
         if(link?.href == "logout"){
           logoutUser()
         }
       }}
+=======
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
     >
       {link.icon}
 

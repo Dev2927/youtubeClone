@@ -24,7 +24,11 @@ function Signup() {
         <img
           src={blitzLogo}
           alt="Image"
+<<<<<<< HEAD
           className="absolute dark:brightness-[0.2] dark:grayscale h-[35%] w-[60%] object-cover inset-1/4"
+=======
+          className="absolute dark:brightness-[0.2] dark:grayscale h-[40%] w-[50%] object-cover inset-1/4"
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
         />
       </div>
     </div>

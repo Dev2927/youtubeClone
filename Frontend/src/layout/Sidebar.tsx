@@ -1,16 +1,28 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
+=======
+import { useState } from "react";
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import {
   IconArrowLeft,
   IconBrandTabler,
   IconSettings,
+<<<<<<< HEAD
   IconSearch,
 } from "@tabler/icons-react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+=======
+  IconUserBolt,
+  IconSearch
+} from "@tabler/icons-react";
+import { Link, Outlet } from "react-router-dom";
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import BlitzLogo from "../assets/BlitzTV.jpg";
 import { PlaceholdersAndVanishInput } from "../components/ui/placeholders-and-vanish-input";
+<<<<<<< HEAD
 import axios from "axios";
 import { BASE_URL } from "@/env";
 import { useAuthStore } from "@/auth/Auth.interface";
@@ -23,11 +35,30 @@ export function SidebarDemo() {
     {
       label: "Dashboard",
       href: "/",
+=======
+
+export function SidebarDemo() {
+
+  const links = [
+    {
+      label: "Dashboard",
+      href: "#",
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
       icon: (
         <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
     {
+<<<<<<< HEAD
+=======
+      label: "Profile",
+      href: "#",
+      icon: (
+        <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
       label: "Settings",
       href: "#",
       icon: (
@@ -36,11 +67,18 @@ export function SidebarDemo() {
     },
     {
       label: "Logout",
+<<<<<<< HEAD
       href: "logout",
       icon: (
         <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
       onclick: () => console.log("Logout"),
+=======
+      href: "#",
+      icon: (
+        <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
     },
   ];
 
@@ -115,7 +153,10 @@ export function SidebarDemo() {
     </div>
   );
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
 export const Logo = () => {
   return (
     <Link
@@ -151,6 +192,7 @@ export const LogoIcon = () => {
   );
 };
 
+<<<<<<< HEAD
 const Dashboard = () => {
   const navigate = useNavigate();
 
@@ -222,6 +264,13 @@ const Dashboard = () => {
             </Avatar>
           </div>
         </div>
+=======
+// Dummy dashboard component with content
+const Dashboard = () => {
+  return (
+    <div className="flex flex-1">
+      <div className="rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full">
+>>>>>>> 6b32cb50d51753ce7e5cc17012000dd8ac306ed9
         <Outlet />
       </div>
     </div>

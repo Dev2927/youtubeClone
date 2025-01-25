@@ -10,7 +10,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  console.log('Incoming field:', file.fieldname);
   cb(null, true);
 };
 

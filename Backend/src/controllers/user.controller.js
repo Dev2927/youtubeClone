@@ -54,9 +54,6 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImageLocalPath = req.files.coverImage[0].path;
   }
 
-  // console.log("AvatarLocalPath: ", avatarLocalPath);
-  // console.log("CoverImageLocalPath: ", coverImageLocalPath);
-
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
@@ -67,9 +64,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatar) {
     throw new ApiError(400, "Avatar file is required");
   }
-
-  // console.log("Avatar: ", avatar);
-  // console.log("CoverImage: ", coverImage);
 
   const user = await User.create({
     fullName,
@@ -97,15 +91,11 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // console.log('EMAIl: ', email)
-
   if (!email) {
     throw new ApiError(400, "email is required");
   }
 
   const user = await User.findOne({ email });
-
-  // console.log("NF: ", user);
 
   if (!user) {
     throw new ApiError(404, "User doesn't exist");
@@ -149,8 +139,10 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // ------------------------- Logout user ---------------------
 const logoutUser = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
   await User.findByIdAndUpdate(
-    req.user._id,
+    userId,
     {
       $unset: {
         refreshToken: 1,
@@ -175,8 +167,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 // -------------------------- Refresh & Access Token ---------------------------------
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req.body.refreshToken;
+
+  console.log("IRT : ", incomingRefreshToken);
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized Request");
@@ -188,15 +181,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET
     );
 
-    // console.log("DECODe: ", decodedToken._id);
-
     const user = User.findById(decodedToken?._id);
 
     if (!user) {
       throw new ApiError(401, "Invalid refresh token");
     }
-
-    // console.log("AVA?: ", user._id);
 
     const options = {
       httpOnly: true,
@@ -250,9 +239,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { fullName, email, username } = req.body;
 
-  // console.log('REQ_BODY: ', req.body)
-
-  if (!fullName || !email  || !username) {
+  if (!fullName || !email || !username) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -262,7 +249,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       $set: {
         fullName,
         email,
-        username
+        username,
       },
     },
     { new: true }
@@ -274,7 +261,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req.files?.avatar[0]?.path
+  const avatarLocalPath = req.files?.avatar[0]?.path;
 
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is missing");
@@ -305,8 +292,6 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req?.file?.path;
-
-  // console.log('This is update cImage : ', coverImageLocalPath)
 
   if (!coverImageLocalPath) {
     throw new ApiError(400, "Cover Image is missing");
@@ -405,7 +390,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
-  
   const user = await User.aggregate([
     {
       $match: {

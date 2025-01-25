@@ -11,8 +11,8 @@ connectDB()
     app.on('error', erorr => {
         console.log('Something went wrong', erorr)
     })
-    app.listen(process.env.PORT || 8000, () => {
-        console.log(`Server is running at ${process.env.PORT} port`);
+    app.listen(process.env.PORT || 8000, "0.0.0.0", () => {
+        console.log(`Backend running on http://0.0.0.0:${process.env.PORT}`);
     })
 })
 .catch((err) => {
